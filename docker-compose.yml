@@ -174,7 +174,7 @@ services:
     image: redis:alpine
 
 volumes:
-  postgres_data: {}
+  postgres_data: /opt/openwisp/postgresql/data
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}
@@ -184,4 +184,4 @@ networks:
   default:
     ipam:
       config:
-        - subnet: 172.18.0.0/16
+        - subnet: 10.1.0.0/16
