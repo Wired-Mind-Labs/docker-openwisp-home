@@ -1,0 +1,188 @@
+version: "3"
+
+services:
+  dashboard:
+    image: openwisp/openwisp-dashboard:latest
+    build:
+      context: build
+      dockerfile: openwisp_dashboard/Dockerfile
+      args:
+        DASHBOARD_APP_PORT: $DASHBOARD_APP_PORT
+    env_file:
+      - .env
+    volumes:
+      - openwisp_static:/opt/openwisp/static
+      - openwisp_media:/opt/openwisp/media
+    depends_on:
+      - postgres
+      - redis
+      - postfix
+
+  controller:
+    image:  openwisp/openwisp-controller:latest
+    build:
+      context: build
+      dockerfile: openwisp_controller/Dockerfile
+      args:
+        CONTROLLER_APP_PORT: $CONTROLLER_APP_PORT
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
+  radius:
+    image: openwisp/openwisp-radius:latest
+    build:
+      context: build
+      dockerfile: openwisp_radius/Dockerfile
+      args:
+        RADIUS_APP_PORT: $RADIUS_APP_PORT
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - dashboard
+
+  topology:
+    image: openwisp/openwisp-topology:latest
+    build:
+      context: build
+      dockerfile: openwisp_topology/Dockerfile
+      args:
+        TOPOLOGY_APP_PORT: $TOPOLOGY_APP_PORT
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - dashboard
+
+  websocket:
+    image: openwisp/openwisp-websocket:latest
+    build:
+      context: build
+      dockerfile: openwisp_websocket/Dockerfile
+      args:
+        WEBSOCKET_APP_PORT: $WEBSOCKET_APP_PORT
+    env_file:
+      - .env
+    depends_on:
+      - dashboard
+
+  nginx:
+    image: openwisp/openwisp-nginx:latest
+    build:
+      context: build
+      dockerfile: openwisp_nginx/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - openwisp_static:/opt/openwisp/static:ro
+      - openwisp_media:/opt/openwisp/media:ro
+      - openwisp_certs:/etc/letsencrypt
+      - public_html:/opt/openwisp/public_html
+    networks:
+      default:
+        aliases:
+         - dashboard.internal
+         - controller.internal
+         - radius.internal
+         - topology.internal
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - dashboard
+      - controller
+      - radius
+      - topology
+      - websocket
+
+  celery:
+    image: openwisp/openwisp-dashboard:latest
+    environment:
+      - MODULE_NAME=celery
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
+  celerybeat:
+    image: openwisp/openwisp-dashboard:latest
+    environment:
+      - MODULE_NAME=celerybeat
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
+  postfix:
+    image: openwisp/openwisp-postfix:latest
+    build:
+      context: build
+      dockerfile: openwisp_postfix/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - openwisp_certs:/etc/ssl/mail
+
+  freeradius:
+    image: openwisp/openwisp-freeradius:latest
+    build:
+      context: build
+      dockerfile: openwisp_freeradius/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    depends_on:
+      - postgres
+      - radius
+      - dashboard
+
+  postgres:
+    image: mdillon/postgis:11-alpine
+    environment:
+      - POSTGRES_DB=$DB_NAME
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASS
+      - TZ=$TZ
+    volumes:
+      - /opt/openwisp@home/postgresql/data:/var/lib/postgresql/data
+
+  openvpn:
+    image: openwisp/openwisp-openvpn:latest
+    build:
+      context: build
+      dockerfile: openwisp_openvpn/Dockerfile
+    ports:
+      - "1194:1194/udp"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    cap_add:
+      - NET_ADMIN
+
+  redis:
+    image: redis:alpine
+
+volumes:
+  postgres_data: {}
+  openwisp_certs: {}
+  openwisp_media: {}
+  openwisp_static: {}
+  public_html: {}
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.1.0.0/16
+        
