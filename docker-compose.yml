@@ -14,7 +14,6 @@ services:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
     depends_on:
-      - postgres
       - redis
       - postfix
 
@@ -28,7 +27,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
       - redis
       - dashboard
 
@@ -42,7 +40,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
       - dashboard
 
   topology:
@@ -55,7 +52,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
       - dashboard
 
   websocket:
@@ -106,7 +102,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
       - redis
       - dashboard
 
@@ -117,7 +112,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
       - redis
       - dashboard
 
@@ -142,19 +136,8 @@ services:
       - "1812:1812/udp"
       - "1813:1813/udp"
     depends_on:
-      - postgres
       - radius
       - dashboard
-
-  postgres:
-    image: mdillon/postgis:11-alpine
-    environment:
-      - POSTGRES_DB=$DB_NAME
-      - POSTGRES_USER=$DB_USER
-      - POSTGRES_PASSWORD=$DB_PASS
-      - TZ=$TZ
-    volumes:
-      - /opt/openwisp@home/postgresql/data:/var/lib/postgresql/data
 
   openvpn:
     image: openwisp/openwisp-openvpn:latest
@@ -165,8 +148,6 @@ services:
       - "1194:1194/udp"
     env_file:
       - .env
-    depends_on:
-      - postgres
     cap_add:
       - NET_ADMIN
 
