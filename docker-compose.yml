@@ -154,7 +154,7 @@ services:
       - POSTGRES_PASSWORD=$DB_PASS
       - TZ=$TZ
     volumes:
-      - /opt/openwisp/postgresql/data:/var/lib/postgresql/data
+      - /opt/openwisp@home/postgresql/data:/var/lib/postgresql/data
 
   openvpn:
     image: openwisp/openwisp-openvpn:latest
