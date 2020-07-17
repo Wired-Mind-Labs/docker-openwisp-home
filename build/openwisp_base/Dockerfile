@@ -40,6 +40,7 @@ RUN pip install channels_redis service_identity django-redis psycopg2 uwsgi \
                 --prefix='/install'
 ARG DJANGO_SOURCE=django==2.2
 RUN pip install --upgrade --prefix='/install' ${DJANGO_SOURCE}
+RUN pip install gdal
 
 FROM SYSTEM
 
