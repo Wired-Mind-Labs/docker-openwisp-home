@@ -15,7 +15,7 @@ FROM SYSTEM AS PYTHON
 # 1. Twisted: gcc
 # 2. Postgresql: libpq-dev
 RUN apt update && \
-    apt install --yes --no-install-recommends gcc libpq-dev
+    apt install --yes --no-install-recommends gcc libpq-dev binutils libproj-dev gdal-bin
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
