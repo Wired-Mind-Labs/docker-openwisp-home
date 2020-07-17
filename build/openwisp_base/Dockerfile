@@ -4,8 +4,8 @@ FROM python:3.7.5-slim-buster AS SYSTEM
 # 1. Pillow: zlib1g-dev libjpeg-dev
 # 2. gettext: Required by envsubst used in scripts
 # 3. django-freeradius/weasyprint: libcairo2 libpangocairo-1.0
-RUN apt update && \
-    apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev \
+RUN apt update && apt upgrade && \
+    apt install --yes --no-install-recommends apt-utils zlib1g-dev libjpeg-dev \
                 libcairo2 libpangocairo-1.0 gdal-bin gettext && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
@@ -15,7 +15,7 @@ FROM SYSTEM AS PYTHON
 # 1. Twisted: gcc
 # 2. Postgresql: libpq-dev
 RUN apt update && \
-    apt install --yes --no-install-recommends gcc libpq-dev binutils libproj-dev gdal-bin
+    apt install --yes --no-install-recommends gcc libpq-dev binutils libproj-dev gdal-bin libgdal-dev
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
